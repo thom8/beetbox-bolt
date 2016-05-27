@@ -1,0 +1,16 @@
+---
+vagrant_ip: 192.168.28.28
+vagrant_memory: 2048
+
+# Beetbox settings.
+beet_domain: beetbox-bolt.local
+beet_site_name: "Bolted 8"
+beet_root: "{{ beet_base }}/{{ bolt_machine_name }}/docroot"
+
+# Bolt settings.
+bolt_machine_name: bolted8
+
+# Drupal settings.
+drupal_install_profile: thunder
+drupal_account_name: admin
+drupal_account_pass: admin

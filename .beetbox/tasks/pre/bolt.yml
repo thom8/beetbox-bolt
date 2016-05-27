@@ -1,0 +1,54 @@
+---
+- set_fact:
+    bolt_repo: "https://github.com/acquia/bolt.git"
+  when: bolt_repo is not defined
+
+- set_fact:
+    bolt_machine_name: "bolted8"
+  when: bolt_machine_name is not defined
+
+- name: Clone Bolt from GitHub.
+  git:
+    repo: "{{ bolt_repo }}"
+    dest: "{{ beet_base }}/bolt"
+
+- name: Install Bolt dependencies with composer.
+  composer:
+    command: install
+    working_dir: "{{ beet_base }}/bolt"
+  become: no
+
+- name: Create bolt config files.
+  template:
+    src: "{{ beet_base }}/.beetbox/bolt/{{ item }}.j2"
+    dest: "{{ beet_base }}/bolt/{{ item }}"
+    force: yes
+    mode: 0644
+  with_items:
+    - local.drushrc.php
+    - local.settings.php
+    - project.yml
+  become: no
+
+- name: Set PHP CLI memory limit to unlimited.
+  lineinfile:
+    dest: /etc/php5/cli/conf.d/memory_limit.ini
+    regexp: "^memory_limit"
+    line: "memory_limit = -1"
+    state: present
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Disable xdebug for PHP CLI.
+  file:
+    path: /etc/php5/cli/conf.d/20-xdebug.ini
+    state: absent
+
+- name: Create new Bolt project.
+  shell: ./bolt.sh create
+  args:
+    chdir: "{{ beet_base }}/bolt"
+    creates: "{{ beet_base }}/{{ bolt_machine_name }}/composer.lock"
+  become: no
